@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>매장현황 · 행사계획</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F3EC;
+    --card:#FFFFFF;
+    --ink:#211F1B;
+    --ink-soft:#6B6457;
+    --line:#E4DDCC;
+    --brass:#AD8A4E;
+    --brass-deep:#8B6E3A;
+    --brass-tint:#F1E8D6;
+    --danger:#B5562C;
+    --navy:#305496;
+    --green:#548235;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Google Sans','Noto Sans KR', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:none; width:100%; margin:0 auto; padding:48px 32px 60px; box-sizing:border-box; }
+
+  /* ===== Workbook top header ===== */
+  .workbook-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:24px;
+    flex-wrap:wrap;
+    border-bottom:1px solid var(--ink);
+    padding-bottom:22px;
+    margin-bottom:0;
+  }
+  .eyebrow{
+    font-size:12px; letter-spacing:.28em; color:var(--brass-deep);
+    font-weight:700; text-transform:uppercase; margin-bottom:8px;
+  }
+  h1{
+    font-family:'Google Sans','Noto Sans KR', sans-serif; font-weight:700;
+    font-size:34px; margin:0; letter-spacing:-.01em;
+  }
+  .workbook-sub{ font-size:12px; color:var(--ink-soft); }
+  .save-badge{
+    font-size:11px; color:#2E7D32; margin-top:0;
+    display:inline-flex; align-items:center; gap:5px;
+    transition:opacity .3s ease, color .2s ease;
+  }
+  .save-badge::before{
+    content:""; width:6px; height:6px; border-radius:50%; background:#2E7D32; flex:0 0 auto;
+    transition:background .2s ease;
+  }
+  .save-badge.flash{ opacity:.55; }
+  .save-badge.syncing{ color:#B5562C; }
+  .save-badge.syncing::before{ background:#B5562C; }
+  .save-badge.err{ color:#C62828; }
+  .save-badge.err::before{ background:#C62828; }
+
+  .gh-settings-btn{
+    font-size:11px; font-weight:700; color:var(--ink-soft); background:var(--card);
+    border:1px solid var(--line); border-radius:3px; padding:6px 10px; cursor:pointer;
+    font-family:inherit;
+  }
+  .gh-settings-btn:hover{ border-color:var(--brass); color:var(--brass-deep); }
+
+  .gh-modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(33,31,27,.55);
+    align-items:center; justify-content:center; z-index:1000; padding:20px;
+  }
+  .gh-modal-overlay.open{ display:flex; }
+  .gh-modal{
+    background:var(--card); border-radius:6px; padding:28px; width:100%; max-width:440px;
+    max-height:88vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,.25);
+  }
+  .gh-modal-title{ font-family:'Google Sans','Noto Sans KR', sans-serif; font-weight:700; font-size:18px; margin-bottom:10px; }
+  .gh-modal-desc{ font-size:12px; color:var(--ink-soft); line-height:1.6; margin-bottom:18px; }
+  .gh-modal label{ display:block; font-size:12px; font-weight:700; color:var(--ink); margin:14px 0 6px; }
+  .gh-modal input{
+    width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:3px;
+    font-family:inherit; font-size:13px; color:var(--ink); box-sizing:border-box;
+  }
+  .gh-modal input:focus{ outline:none; border-color:var(--brass); }
+  .gh-modal-warn{
+    font-size:11px; color:var(--danger); background:#FBEDE6; border:1px solid #EFCBB6;
+    border-radius:3px; padding:10px 12px; margin-top:16px; line-height:1.6;
+  }
+  .gh-modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:22px; }
+  .gh-btn-secondary, .gh-btn-primary{
+    font-family:inherit; font-size:13px; font-weight:700; padding:9px 18px; border-radius:3px; cursor:pointer;
+  }
+  .gh-btn-secondary{ background:none; border:1px solid var(--line); color:var(--ink-soft); }
+  .gh-btn-secondary:hover{ border-color:var(--ink-soft); color:var(--ink); }
+  .gh-btn-primary{ background:var(--ink); border:1px solid var(--ink); color:#fff; }
+  .gh-btn-primary:hover{ background:#000; }
+
+  /* ===== Sheet tabs (level 1) ===== */
+  .sheet-tabs{
+    display:flex; gap:4px; margin-top:0;
+    border-bottom:2px solid var(--ink);
+  }
+  .sheet-tab{
+    font-family:'Google Sans','Noto Sans KR', sans-serif;
+    font-weight:700; font-size:14px;
+    padding:11px 26px 9px;
+    background:var(--line);
+    color:var(--ink-soft);
+    border:1px solid var(--line);
+    border-bottom:none;
+    border-radius:6px 6px 0 0;
+    cursor:pointer;
+    position:relative;
+    top:2px;
+  }
+  .sheet-tab.active{
+    background:var(--card);
+    color:var(--ink);
+    border-color:var(--ink);
+    top:1px;
+  }
+  .sheet-tab:hover:not(.active){ background:#EFE8D6; }
+
+  .panel{ display:none; padding-top:32px; }
+  .panel.active{ display:block; }
+
+  /* ===== Shared toolbar / search ===== */
+  .toolbar{ display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:28px; flex-wrap:wrap; }
+  .search{ position:relative; flex:1; min-width:220px; max-width:340px; }
+  .search input{
+    width:100%; padding:11px 14px 11px 36px; border:1px solid var(--line);
+    border-radius:var(--radius); background:var(--card); font-family:inherit; font-size:14px; color:var(--ink);
+  }
+  .search input:focus{ outline:none; border-color:var(--brass); }
+  .search::before{
+    content:""; position:absolute; left:13px; top:50%; width:13px; height:13px;
+    transform:translateY(-50%); border:1.5px solid var(--ink-soft); border-radius:50%; box-sizing:border-box;
+  }
+  .search::after{
+    content:""; position:absolute; left:23px; top:64%; width:7px; height:1.5px;
+    background:var(--ink-soft); transform:rotate(45deg);
+  }
+  .header-meta{ text-align:right; font-size:13px; color:var(--ink-soft); line-height:1.6; }
+  .header-meta b{ font-family:'Google Sans','Noto Sans KR', sans-serif; font-size:24px; color:var(--ink); display:block; }
+
+  /* ===== Brand grid (매장현황) ===== */
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:20px; align-items:start; }
+  .card{ background:var(--card); border:1px solid var(--line); border-top:3px solid var(--brass); display:flex; flex-direction:column; }
+  .card-head{ display:flex; align-items:center; gap:12px; padding:20px 22px 16px; border-bottom:1px solid var(--line); }
+  .monogram{
+    width:38px; height:38px; min-width:38px; border-radius:50%; background:var(--brass-tint);
+    color:var(--brass-deep); display:flex; align-items:center; justify-content:center;
+    font-family:'Google Sans','Noto Sans KR', sans-serif; font-weight:700; font-size:16px;
+  }
+  .card-head-text{ flex:1; min-width:0; }
+  .brand-name{ font-family:'Google Sans','Noto Sans KR', sans-serif; font-weight:700; font-size:19px; margin:0 0 2px; word-break:keep-all; }
+  .brand-count{ font-size:12px; color:var(--ink-soft); }
+  .card-head .remove-brand{ border:none; background:none; color:var(--ink-soft); cursor:pointer; font-size:18px; line-height:1; padding:4px; }
+  .card-head .remove-brand:hover{ color:var(--danger); }
+  .store-list{ list-style:none; margin:0; padding:6px 0; max-height:480px; overflow-y:auto; }
+  .store-list li{ display:flex; align-items:center; gap:10px; padding:9px 22px; font-size:14px; border-bottom:1px dashed var(--line); }
+  .store-list li:last-child{ border-bottom:none; }
+  .store-list li .idx{ font-size:11px; color:var(--ink-soft); min-width:18px; }
+  .store-list li span.name{ flex:1; word-break:keep-all; text-align:center; }
+  .store-list li .del{ border:none; background:none; color:var(--line); cursor:pointer; font-size:15px; padding:2px 4px; opacity:0; transition:opacity .12s ease, color .12s ease; }
+  .store-list li:hover .del{ opacity:1; }
+  .store-list li .del:hover{ color:var(--danger); }
+  .store-list li.empty{ color:var(--ink-soft); font-style:italic; font-size:13px; padding:16px 22px; }
+  .add-store{ display:flex; gap:8px; padding:14px 22px 20px; border-top:1px solid var(--line); margin-top:auto; }
+  .add-store input{ flex:1; min-width:0; border:1px solid var(--line); border-radius:var(--radius); padding:8px 10px; font-family:inherit; font-size:13px; }
+  .add-store input:focus{ outline:none; border-color:var(--brass); }
+  .add-store button{ border:1px solid var(--ink); background:none; color:var(--ink); border-radius:var(--radius); padding:0 14px; font-size:13px; font-weight:700; cursor:pointer; }
+  .add-store button:hover{ background:var(--ink); color:#fff; }
+  .card.add-brand{
+    border:1px dashed var(--line); align-items:center; justify-content:center; text-align:center;
+    padding:32px 22px; cursor:pointer; color:var(--ink-soft); min-height:180px;
+  }
+  .card.add-brand:hover{ border-color:var(--brass); color:var(--brass-deep); background:var(--brass-tint); }
+  .card.add-brand .plus{ font-family:'Google Sans','Noto Sans KR', sans-serif; font-size:30px; margin-bottom:8px; }
+  .card.add-brand .label{ font-size:13px; font-weight:700; letter-spacing:.02em; }
+
+  /* ===== 행사계획: year tabs (level 2) ===== */
+  .year-tabs{ display:flex; gap:8px; align-items:center; margin-bottom:18px; flex-wrap:wrap; }
+  .year-tab{
+    font-family:'Google Sans','Noto Sans KR', sans-serif; font-weight:700; font-size:14px; color:#fff;
+    padding:8px 18px; border-radius:3px; cursor:pointer; border:none; opacity:.55;
+  }
+  .year-tab.active{ opacity:1; box-shadow:0 0 0 2px var(--ink) inset; }
+  .year-tab.add{
+    font-family:'Google Sans','Noto Sans KR', sans-serif; font-weight:700; background:transparent; color:var(--ink-soft);
+    border:1px dashed var(--line); opacity:1;
+  }
+  .year-tab.add:hover{ border-color:var(--brass); color:var(--brass-deep); }
+  .year-tab .remove-year{ margin-left:8px; opacity:.7; }
+  .year-tab .remove-year:hover{ opacity:1; }
+
+  /* ===== month tabs (level 3) ===== */
+  .month-tabs{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:28px; }
+  .month-tab{
+    font-size:13px; font-weight:500; padding:7px 14px; border-radius:3px; cursor:pointer;
+    background:var(--card); border:1px solid var(--line); color:var(--ink-soft);
+  }
+  .month-tab.active{ background:var(--ink); color:#fff; border-color:var(--ink); font-weight:700; }
+  .month-tab:hover:not(.active){ border-color:var(--brass); color:var(--brass-deep); }
+
+  /* ===== event section ===== */
+  .section-title{ font-family:'Google Sans','Noto Sans KR', sans-serif; font-weight:700; font-size:20px; margin:0 0 4px; }
+  .section-sub{ font-size:12px; color:var(--ink-soft); margin-bottom:14px; }
+  .cal-sub-title{ font-family:'Google Sans','Noto Sans KR', sans-serif; font-weight:700; font-size:20px; color:var(--ink); margin-bottom:14px; }
+
+  table.events{ width:100%; border-collapse:collapse; background:var(--card); margin-bottom:18px; font-size:13px; }
+  table.events th{
+    background:var(--ink); color:#fff; font-weight:700; font-size:12px; text-align:center;
+    padding:10px 10px; white-space:nowrap;
+  }
+  table.events td{ border-bottom:1px solid var(--line); padding:4px 6px; vertical-align:middle; text-align:center; }
+  table.events tbody tr:hover{ background:var(--brass-tint); }
+  table.events input{
+    width:100%; border:1px solid transparent; background:transparent; font-family:inherit;
+    font-size:13px; padding:6px 6px; border-radius:2px; color:var(--ink); text-align:center;
+  }
+  table.events input:focus{ outline:none; border-color:var(--brass); background:#fff; }
+  table.events input:disabled{ background:#F4F1E9; color:var(--ink-soft); cursor:not-allowed; }
+  table.events input[type=date]{ min-width:130px; }
+  table.events textarea{
+    width:100%; min-width:140px; min-height:34px; border:1px solid transparent; background:transparent;
+    font-family:inherit; font-size:13px; padding:6px 6px; border-radius:2px; color:var(--ink);
+    text-align:center; resize:vertical; line-height:1.4; overflow:hidden;
+  }
+  table.events textarea:focus{ outline:none; border-color:var(--brass); background:#fff; }
+  table.events select{
+    width:100%; border:1px solid var(--line); background:#fff; font-family:inherit;
+    font-size:13px; padding:6px 6px; border-radius:2px; color:var(--ink); cursor:pointer; text-align:center; text-align-last:center;
+  }
+  table.events select:focus{ outline:none; border-color:var(--brass); }
+  table.events select:disabled{ background:#F4F1E9; color:var(--ink-soft); cursor:not-allowed; }
+  table.events .num-col{ width:34px; text-align:center; color:var(--ink-soft); font-size:12px; }
+  table.events .del-col{ width:30px; text-align:center; }
+  table.events .row-del{ border:none; background:none; color:var(--line); cursor:pointer; font-size:16px; }
+  table.events tr:hover .row-del{ color:var(--danger); }
+
+  .ship-dates{ display:flex; flex-direction:column; align-items:center; gap:4px; min-width:150px; padding:4px 0; }
+  .ship-date-row{ display:flex; align-items:center; justify-content:center; gap:4px; }
+  .ship-date-row input[type=date]{ flex:1; min-width:120px; }
+  .ship-date-row .ship-date-del{
+    border:none; background:none; color:var(--line); cursor:pointer; font-size:15px; padding:0 3px; line-height:1;
+  }
+  .ship-date-row .ship-date-del:hover{ color:var(--danger); }
+  .ship-date-add{
+    border:1px dashed var(--line); background:none; color:var(--ink-soft); font-size:11px; font-weight:700;
+    padding:3px 9px; cursor:pointer; align-self:center; border-radius:2px;
+  }
+  .ship-date-add:hover{ border-color:var(--brass); color:var(--brass-deep); background:var(--brass-tint); }
+
+  .add-row-btn{
+    border:1px dashed var(--line); background:none; color:var(--ink-soft); padding:10px;
+    width:100%; cursor:pointer; font-size:13px; font-weight:700; margin-bottom:40px;
+  }
+  .add-row-btn:hover{ border-color:var(--brass); color:var(--brass-deep); background:var(--brass-tint); }
+
+  /* ===== calendar ===== */
+  .calendar{ border:1px solid var(--line); background:var(--card); }
+  .cal-weekdays, .cal-week{ display:grid; grid-template-columns:repeat(7, 1fr); }
+  .cal-weekdays div{
+    text-align:center; font-size:12px; font-weight:700; padding:9px 0;
+    background:#F2EFE6; border-bottom:1px solid var(--line); border-right:1px solid var(--line);
+  }
+  .cal-weekdays div:last-child{ border-right:none; }
+  .cal-weekdays div.sun{ color:#C00000; }
+  .cal-weekdays div.sat{ color:#1F4E78; }
+  .cal-day{
+    min-height:96px; border-right:1px solid var(--line); border-bottom:1px solid var(--line);
+    padding:6px; position:relative; vertical-align:top;
+  }
+  .cal-week > .cal-day:last-child{ border-right:none; }
+  .cal-day.outside{ background:#FAFAF7; }
+  .cal-day .daynum{ font-family:'Google Sans','Noto Sans KR', sans-serif; font-size:13px; font-weight:700; }
+  .cal-day.sun .daynum{ color:#C00000; }
+  .cal-day.sat .daynum{ color:#1F4E78; }
+  .cal-day.outside .daynum{ color:#C9C2B0; }
+  .cal-day .chip{
+    margin-top:4px; font-size:11px; background:var(--brass-tint); color:var(--brass-deep);
+    padding:2px 5px; border-radius:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    cursor:default; font-weight:800; border-left:3px solid transparent;
+  }
+  .cal-day .chip .chip-type{
+    display:inline-block; background:#455A64; color:#fff; font-size:9px; font-weight:700;
+    padding:1px 4px; border-radius:2px; margin-right:4px; letter-spacing:.02em; vertical-align:middle;
+  }
+
+  /* ===== brand legend ===== */
+  .brand-legend{ display:flex; flex-wrap:wrap; gap:8px 16px; margin-bottom:16px; }
+  .brand-legend .item{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-soft); }
+  .brand-legend .dot{ width:10px; height:10px; border-radius:50%; display:inline-block; }
+  .brand-legend.type-legend{ margin-bottom:20px; }
+  .brand-legend.type-legend .dot{ border-radius:2px; }
+
+  /* ===== year-add instructions card ===== */
+  .hint{
+    font-size:12px; color:var(--ink-soft); margin-top:10px; line-height:1.7;
+  }
+
+  footer{
+    margin-top:48px; padding-top:18px; border-top:1px solid var(--line);
+    font-size:12px; color:var(--ink-soft);
+  }
+
+  /* ===== 통계 sheet ===== */
+  .stats-toolbar{ display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:28px; flex-wrap:wrap; }
+  .stats-year-tabs{ display:flex; gap:8px; flex-wrap:wrap; }
+  .stat-year-tab{
+    font-size:13px; font-weight:700; padding:7px 16px; border-radius:3px; cursor:pointer;
+    background:var(--card); border:1px solid var(--line); color:var(--ink-soft);
+  }
+  .stat-year-tab.active{ background:var(--ink); color:#fff; border-color:var(--ink); }
+  .stat-year-tab:hover:not(.active){ border-color:var(--brass); color:var(--brass-deep); }
+
+  .stats-section{ margin-bottom:48px; }
+  .stats-grid{ display:grid; grid-template-columns:minmax(300px,440px) 1fr; gap:28px; align-items:start; }
+  .stats-grid-stack{ max-width:900px; }
+
+  table.stats{ width:100%; border-collapse:collapse; background:var(--card); font-size:11px; }
+  table.stats th{
+    background:var(--ink); color:#fff; font-weight:700; font-size:10.5px; text-align:center;
+    padding:6px 6px; white-space:nowrap; position:sticky; top:0;
+  }
+  table.stats td{ border-bottom:1px solid var(--line); padding:5px 6px; text-align:center; }
+  table.stats tbody tr:hover{ background:var(--brass-tint); }
+  table.stats .rank-col{ width:32px; text-align:center; color:var(--ink-soft); font-weight:700; font-family:'Google Sans','Noto Sans KR', sans-serif; }
+  table.stats .num-col2{ text-align:center; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .stats-table-scroll{ max-height:520px; overflow-y:auto; overflow-x:auto; border:1px solid var(--line); }
+
+  .chart-bars{ display:flex; flex-direction:column; gap:11px; }
+  .chart-bar-row{ display:grid; grid-template-columns:150px 1fr 52px; align-items:center; gap:10px; }
+  .chart-bar-label{ font-size:12px; color:var(--ink); word-break:keep-all; text-align:right; line-height:1.3; }
+  .chart-bar-track{ background:#F2EFE6; border-radius:2px; height:16px; overflow:hidden; }
+  .chart-bar-fill{ height:100%; border-radius:2px; transition:width .2s ease; }
+  .chart-bar-value{ font-size:12px; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+  .chart-empty{ font-size:13px; color:var(--ink-soft); font-style:italic; padding:20px 4px; }
+  .stats-chart-note{ font-size:11px; color:var(--ink-soft); margin-top:10px; }
+
+  /* ===== chart left axis (기준표) ===== */
+  .chart-with-axis{ display:flex; align-items:flex-end; gap:10px; width:100%; }
+  .chart-axis{
+    display:flex; flex-direction:column; justify-content:space-between; align-items:flex-end;
+    flex:0 0 auto; padding-right:6px; font-size:11px; color:var(--ink-soft);
+    font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+  .chart-axis-tick{ line-height:1; transform:translateY(-2px); }
+  .chart-axis-tick:last-child{ transform:translateY(2px); }
+
+  /* ===== vertical (column) charts ===== */
+  .chart-vertical-wrap{ flex:1 1 auto; min-width:0; padding-bottom:4px; }
+  .chart-vbars{ display:flex; align-items:flex-end; gap:14px; min-width:min-content; padding:4px 4px 0; }
+  .chart-vcol{ display:flex; flex-direction:column; align-items:center; gap:6px; width:46px; flex:0 0 auto; }
+  .chart-vcol-value{ font-size:11px; color:var(--ink-soft); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .chart-vcol-stack{
+    width:100%; display:flex; flex-direction:column-reverse; justify-content:flex-start;
+    background:#F2EFE6; border-radius:2px 2px 0 0; overflow:hidden; align-self:flex-end;
+  }
+  .chart-vseg{ width:100%; }
+  .chart-vseg:not(:last-child){ border-top:1px solid rgba(255,255,255,.55); }
+  .chart-vcol-label{
+    font-size:11px; color:var(--ink); text-align:center; word-break:keep-all; line-height:1.25;
+    max-width:64px;
+  }
+  .chart-legend{ display:flex; flex-wrap:wrap; gap:10px 16px; margin-top:16px; padding-top:12px; border-top:1px solid var(--line); }
+  .chart-legend-item{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-soft); }
+  .chart-legend-dot{ width:10px; height:10px; border-radius:2px; flex:0 0 auto; }
+  .chart-brand-block{ margin-bottom:28px; }
+  .chart-brand-block:last-child{ margin-bottom:0; }
+  .chart-brand-block-title{
+    font-family:'Google Sans','Noto Sans KR', sans-serif; font-weight:700; font-size:13px;
+    color:var(--ink); margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid var(--line);
+  }
+  .stats-grid-stack{ display:block; }
+  .stats-grid-stack .stats-table-wrap{ margin-bottom:24px; }
+
+  /* ===== grouped monthly bar chart (per-brand bars within each month) ===== */
+  .chart-month-groups{ display:flex; align-items:flex-end; gap:4px; width:100%; padding:4px 4px 0; }
+  .chart-month-group{ display:flex; flex-direction:column; align-items:center; gap:8px; flex:1 1 0; min-width:0; }
+  .chart-month-bars{
+    display:flex; align-items:flex-end; justify-content:center; gap:2px; padding:0 1px;
+    border-bottom:1px solid var(--line); width:100%; overflow:hidden;
+  }
+  .chart-mbar{ flex:0 1 14px; max-width:14px; min-width:2px; border-radius:2px 2px 0 0; }
+
+  @media (max-width:900px){
+    .stats-grid{ grid-template-columns:1fr; }
+  }
+
+  @media (max-width:560px){
+    .wrap{ padding:32px 16px 50px; }
+    h1{ font-size:26px; }
+    .cal-day{ min-height:64px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="workbook-header">
+    <div>
+      <h1 id="pageTitle">OPEN &amp; 행사계획</h1>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+      <div class="workbook-sub">브랜드 매장 관리 · 연간 행사 계획</div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="save-badge" id="saveBadge">자동 저장 대기중</div>
+        <button class="gh-settings-btn" id="ghSettingsBtn" type="button">⚙ Google Sheets 동기화 설정</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="gh-modal-overlay" id="ghModalOverlay">
+    <div class="gh-modal">
+      <div class="gh-modal-title">Google Sheets 동기화 설정</div>
+      <div class="gh-modal-desc">
+        구글 스프레드시트에 연결된 Apps Script 웹 앱 URL을 입력하면, 이 페이지의 변경 사항이 그 구글시트에 자동으로 저장되고,
+        누구든 이 페이지 주소로 접속하면 구글시트에 저장된 데이터를 읽어와 동일한 데이터를 보게 됩니다.
+        (Apps Script 웹 앱을 만드는 방법은 함께 전달된 안내 파일을 참고하세요.)
+      </div>
+      <label>Apps Script 웹 앱 URL</label>
+      <input type="text" id="ghUrl" placeholder="https://script.google.com/macros/s/xxxx/exec">
+      <label>보안 키 (Apps Script 코드에 설정한 SECRET과 동일하게 입력, 선택)</label>
+      <input type="password" id="ghToken" placeholder="예: my-secret-key">
+      <div class="gh-modal-warn">
+        ⚠ 보안 키는 이 브라우저의 로컬 저장소에만 저장됩니다. 이 URL과 보안 키를 아는 사람은 누구든 데이터를 쓸 수 있으므로,
+        신뢰할 수 있는 사람에게만 공유하세요. 보안 키를 비워두면 Apps Script 쪽에서도 SECRET을 빈 값으로 두어야 저장이 됩니다.
+      </div>
+      <div class="gh-modal-actions">
+        <button type="button" class="gh-btn-secondary" id="ghModalCancel">취소</button>
+        <button type="button" class="gh-btn-primary" id="ghModalSave">저장하고 동기화</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet-tabs">
+    <div class="sheet-tab" data-sheet="store">매장현황</div>
+    <div class="sheet-tab active" data-sheet="events">OPEN &amp; 행사계획</div>
+    <div class="sheet-tab" data-sheet="stats">통계</div>
+  </div>
+
+  <!-- ===================== 매장현황 ===================== -->
+  <div class="panel" id="panel-store">
+    <div class="toolbar">
+      <div class="search"><input id="searchInput" type="text" placeholder="매장명 검색"></div>
+      <div class="header-meta">
+        <b id="totalCount">0</b>
+        전체 매장 수 · <span id="brandCount">0</span>개 브랜드
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <footer>
+      브랜드 카드 하단의 입력창으로 매장을 추가하고, 우측 끝 카드에서 새 브랜드를 만들 수 있습니다. 매장과 브랜드는 가나다 오름차순으로 정렬됩니다.
+    </footer>
+  </div>
+
+  <!-- ===================== 행사계획 ===================== -->
+  <div class="panel active" id="panel-events">
+    <div class="year-tabs" id="yearTabs"></div>
+    <div class="month-tabs" id="monthTabs"></div>
+
+    <div id="eventMonthView"></div>
+
+    <div>
+      <div class="section-title">월간 캘린더</div>
+      <div class="cal-sub-title" id="calSub"></div>
+      <div class="brand-legend" id="brandLegend"></div>
+      <div class="brand-legend type-legend" id="typeLegend"></div>
+      <div class="calendar">
+        <div class="cal-weekdays">
+          <div class="sun">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="sat">토</div>
+        </div>
+        <div id="calBody"></div>
+      </div>
+    </div>
+
+    <div class="hint">
+      ▸ 연도 추가: 연도 탭 오른쪽의 <b>＋ 연도추가</b>를 누르면 새 연도가 만들어지고, 1월~12월 시트가 자동 생성됩니다.<br>
+      ▸ 행사 추가: 표 하단의 <b>+ 행 추가</b> 버튼으로 새 행사를 입력하면 시작일~종료일 범위가 캘린더에 자동 표시됩니다.
+    </div>
+  </div>
+
+  <!-- ===================== 통계 ===================== -->
+  <div class="panel" id="panel-stats">
+    <div class="stats-toolbar">
+      <div class="stats-year-tabs" id="statsYearTabs"></div>
+    </div>
+
+    <div class="stats-section">
+      <div class="section-title">브랜드별 행사 통계</div>
+      <div class="section-sub">브랜드별 월별 행사 진행 횟수 표와, 월별 · 브랜드별 세로 막대 차트입니다.</div>
+      <div class="stats-grid stats-grid-stack">
+        <div class="stats-table-wrap" id="brandStatsTable"></div>
+        <div class="stats-chart-wrap">
+          <div id="brandStatsChart"></div>
+          <div class="stats-chart-note">월별로 각 브랜드가 별도 막대로 나란히 표시됩니다. (단위: 건수)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ================= 매장현황 데이터 ================= */
+let storeData = {"레이브": ["스튜디오 성수(1호점)", "성수 플래그십(2호점)", "서울숲 플래그십", "한남 플래그십(1호점)", "한남 스튜디오(2호점)", "롯데수원", "롯데인천", "롯데대전", "롯데안산", "현대신촌", "현대커넥트 부산", "신세계의정부", "신세계대전", "신세계하남", "롯데월드몰", "롯데동부산", "더현대서울", "더현대대구", "신세계강남", "신세계동대구", "신세계센텀시티", "신세계광주", "신세계파주", "용산 아이파크", "스타필드수원", "제주드림타워"], "루에브르": ["서울숲플래그십", "한남플래그십", "한남팝업스토어", "롯데인천", "롯데안산", "더현대서울", "현대판교", "더현대대구", "현대중동", "현대충청", "현대울산", "현대신촌", "현대천호", "신세계강남", "신세계대전", "신세계센텀", "신세계광주", "신세계타임스퀘어", "신세계대구", "스타필드하남", "스타필드수원", "롯데월드몰", "제주드림타워", "신세계사이먼파주", "롯데아울렛동부산", "신세계사이먼부산"], "조이그라이슨": ["도산플래그쉽", "성수플래그쉽", "한남플래그쉽", "더현대서울", "더현대대구", "신세계강남", "신세계센텀", "신세계대전", "롯데본점", "부산본점", "스타필드고양", "현대대전프리미엄아울렛", "신세계여주아울렛", "신세계시흥아울렛", "신세계파주아울렛", "신세계경기", "현대울산", "신세계의정부", "신세계타임스퀘어", "롯데수원", "롯데영등포", "롯데전주", "AK수원", "롯데동부산", "신세계사이먼부산", "현대가든파이브", "현대커넥트청주", "제주드림타워"]};
+let searchTerm = "";
+const collator = new Intl.Collator('ko');
+const grid = document.getElementById('grid');
+const totalCountEl = document.getElementById('totalCount');
+const brandCountEl = document.getElementById('brandCount');
+
+function renderStore(){
+  grid.innerHTML = "";
+  const brandNames = Object.keys(storeData).sort(collator.compare);
+  let total = 0;
+
+  brandNames.forEach(brand => {
+    const stores = storeData[brand].sort(collator.compare);
+    total += stores.length;
+    const card = document.createElement('div');
+    card.className = 'card';
+    const filtered = stores.map((s,i)=>({s,i})).filter(o => o.s.toLowerCase().includes(searchTerm.toLowerCase()));
+    card.innerHTML = `
+      <div class="card-head">
+        <div class="monogram">${brand.charAt(0)}</div>
+        <div class="card-head-text">
+          <p class="brand-name">${escapeHtml(brand)}</p>
+          <div class="brand-count">${stores.length}개 매장</div>
+        </div>
+        <button class="remove-brand" title="브랜드 삭제" data-brand="${escapeAttr(brand)}">&times;</button>
+      </div>
+      <ul class="store-list">
+        ${filtered.length===0
+          ? `<li class="empty">${stores.length===0?'등록된 매장이 없습니다':'검색 결과가 없습니다'}</li>`
+          : filtered.map(o => `
+            <li>
+              <span class="idx">${o.i+1}</span>
+              <span class="name">${escapeHtml(o.s)}</span>
+              <button class="del" data-brand="${escapeAttr(brand)}" data-idx="${o.i}" title="삭제">&times;</button>
+            </li>`).join('')}
+      </ul>
+      <form class="add-store" data-brand="${escapeAttr(brand)}">
+        <input type="text" placeholder="매장명 입력 후 추가" required>
+        <button type="submit">추가</button>
+      </form>`;
+    grid.appendChild(card);
+  });
+
+  const addCard = document.createElement('div');
+  addCard.className = 'card add-brand';
+  addCard.id = 'addBrandCard';
+  addCard.innerHTML = `<div class="plus">+</div><div class="label">새 브랜드 추가</div>`;
+  grid.appendChild(addCard);
+
+  totalCountEl.textContent = total;
+  brandCountEl.textContent = brandNames.length;
+  attachStoreEvents();
+  saveState();
+}
+
+function attachStoreEvents(){
+  document.querySelectorAll('.add-store').forEach(form => {
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const brand = form.dataset.brand;
+      const input = form.querySelector('input');
+      const val = input.value.trim();
+      if(!val) return;
+      storeData[brand].push(val);
+      renderStore();
+    });
+  });
+  document.querySelectorAll('.del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      storeData[btn.dataset.brand].splice(parseInt(btn.dataset.idx,10),1);
+      renderStore();
+    });
+  });
+  document.querySelectorAll('.remove-brand').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const brand = btn.dataset.brand;
+      if(confirm(`'${brand}' 브랜드와 소속 매장 ${storeData[brand].length}곳을 모두 삭제할까요?`)){
+        delete storeData[brand];
+        renderStore();
+      }
+    });
+  });
+  const addBrandCard = document.getElementById('addBrandCard');
+  if(addBrandCard){
+    addBrandCard.addEventListener('click', () => {
+      const name = prompt('새 브랜드명을 입력하세요');
+      if(name && name.trim()){
+        const trimmed = name.trim();
+        if(storeData[trimmed]){ alert('이미 존재하는 브랜드명입니다.'); return; }
+        storeData[trimmed] = [];
+        renderStore();
+      }
+    });
+  }
+}
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchTerm = e.target.value;
+  renderStore();
+});
+
+/* ================= 행사계획 데이터 ================= */
+const YEAR_COLORS = ['#305496','#548235','#AD8A4E','#B5562C','#6B4FA0','#1F7A8C'];
+const BRAND_COLORS = ['#2563EB','#22C55E','#F59E0B','#E11D48','#9333EA','#06B6D4','#EC4899','#65A30D','#EA580C','#4F46E5'];
+const TYPE_COLORS = { 'OPEN': '#E53935', '행사': '#1E88E5', '팝업': '#8E24AA' };
+function typeColor(type){ return TYPE_COLORS[type] || '#455A64'; }
+function darkenColor(hex, amount){
+  const num = parseInt(hex.replace('#',''), 16);
+  let r = (num >> 16) & 255, g = (num >> 8) & 255, b = num & 255;
+  r = Math.max(0, Math.round(r * (1 - amount)));
+  g = Math.max(0, Math.round(g * (1 - amount)));
+  b = Math.max(0, Math.round(b * (1 - amount)));
+  return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+}
+function brandColor(brand){
+  const brandNames = Object.keys(storeData).sort(collator.compare);
+  const idx = brandNames.indexOf(brand);
+  if(idx === -1) return '#8C8371';
+  return BRAND_COLORS[idx % BRAND_COLORS.length];
+}
+let eventYears = [2026];
+let eventData = {}; // { year: { month: [ {id,brand,store,category,type,start,end,shipDates,memo} ] } }
+let eidCounter = 1;
+
+function ensureYear(year){
+  if(!eventData[year]){
+    eventData[year] = {};
+    for(let m=1;m<=12;m++) eventData[year][m] = [];
+  }
+}
+eventYears.forEach(ensureYear);
+
+const today = new Date();
+let currentYear = eventYears.includes(today.getFullYear()) ? today.getFullYear() : eventYears[0];
+let currentMonth = (currentYear === today.getFullYear()) ? (today.getMonth() + 1) : 1;
+
+function yearColor(year){
+  const idx = eventYears.indexOf(year);
+  return YEAR_COLORS[idx % YEAR_COLORS.length];
+}
+
+function renderYearTabs(){
+  const wrap = document.getElementById('yearTabs');
+  wrap.innerHTML = "";
+  eventYears.forEach(year => {
+    const tab = document.createElement('div');
+    tab.className = 'year-tab' + (year===currentYear ? ' active' : '');
+    tab.style.background = yearColor(year);
+    tab.textContent = (year % 100) + '년';
+    tab.addEventListener('click', () => { currentYear = year; currentMonth = 1; renderAll(); });
+
+    const del = document.createElement('span');
+    del.className = 'remove-year';
+    del.textContent = '×';
+    del.title = '연도 삭제';
+    del.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if(eventYears.length <= 1){ alert('최소 한 개의 연도는 남아 있어야 합니다.'); return; }
+      if(confirm(`${year}년 행사계획을 모두 삭제할까요?`)){
+        delete eventData[year];
+        eventYears = eventYears.filter(y => y !== year);
+        if(currentYear === year){ currentYear = eventYears[0]; currentMonth = 1; }
+        renderAll();
+      }
+    });
+    tab.appendChild(del);
+    wrap.appendChild(tab);
+  });
+
+  const addTab = document.createElement('div');
+  addTab.className = 'year-tab add';
+  addTab.textContent = '＋ 연도추가';
+  addTab.addEventListener('click', () => {
+    const input = prompt('추가할 연도를 입력하세요 (예: 2028)');
+    if(!input) return;
+    const year = parseInt(input.trim(), 10);
+    if(!year || year < 2000 || year > 2100){ alert('올바른 연도를 입력해주세요.'); return; }
+    if(eventYears.includes(year)){ alert('이미 존재하는 연도입니다.'); return; }
+    eventYears.push(year);
+    eventYears.sort((a,b)=>a-b);
+    ensureYear(year);
+    currentYear = year; currentMonth = 1;
+    renderAll();
+  });
+  wrap.appendChild(addTab);
+}
+
+function renderMonthTabs(){
+  const wrap = document.getElementById('monthTabs');
+  wrap.innerHTML = "";
+  for(let m=1; m<=12; m++){
+    const tab = document.createElement('div');
+    tab.className = 'month-tab' + (m===currentMonth ? ' active' : '');
+    tab.textContent = m + '월';
+    tab.addEventListener('click', () => { currentMonth = m; renderAll(); });
+    wrap.appendChild(tab);
+  }
+}
+
+function isRowEmpty(r){
+  return !r.brand && !r.store && !r.category && !r.type && !r.start && !r.end && !r.allocDate && !r.memo
+    && (!r.shipDates || r.shipDates.every(d => !d));
+}
+
+function ensureTrailingEmptyRow(rows){
+  if(rows.length === 0 || !isRowEmpty(rows[rows.length - 1])){
+    rows.push({id: eidCounter++, brand:'', store:'', category:'', type:'', start:'', end:'', allocDate:'', shipDates:[''], memo:''});
+  }
+}
+
+function renderEventTable(){
+  const view = document.getElementById('eventMonthView');
+  const rows = eventData[currentYear][currentMonth];
+  ensureTrailingEmptyRow(rows);
+  const brandNames = Object.keys(storeData).sort(collator.compare);
+  const CATEGORY_OPTIONS = ['RTW', '잡화', 'RTW+잡화'];
+  const TYPE_OPTIONS = ['OPEN', '행사', '팝업'];
+  view.innerHTML = `
+    <div class="section-title">${currentYear}년 ${currentMonth}월 행사 계획</div>
+    <div class="section-sub">브랜드 · 매장 · 일정을 입력하면 아래 캘린더에 자동 반영됩니다.</div>
+    <table class="events">
+      <thead><tr>
+        <th class="num-col">#</th><th>브랜드</th><th>매장</th><th>카테고리</th><th>구분</th>
+        <th>시작일</th><th>종료일</th><th>배분완료일</th><th>출고일</th><th>비고</th><th class="del-col"></th>
+      </tr></thead>
+      <tbody id="eventRows">
+        ${rows.map((r,i) => {
+          const storeOptions = (storeData[r.brand] || []).slice().sort(collator.compare);
+          const shipDates = (r.shipDates && r.shipDates.length) ? r.shipDates : [''];
+          return `
+          <tr data-id="${r.id}">
+            <td class="num-col">${i+1}</td>
+            <td>
+              <select data-field="brand">
+                <option value="">선택</option>
+                ${brandNames.map(b => `<option value="${escapeAttr(b)}" ${r.brand===b?'selected':''}>${escapeHtml(b)}</option>`).join('')}
+              </select>
+            </td>
+            <td>
+              <select data-field="store" ${!r.brand ? 'disabled' : ''}>
+                <option value="">선택</option>
+                ${storeOptions.map(s => `<option value="${escapeAttr(s)}" ${r.store===s?'selected':''}>${escapeHtml(s)}</option>`).join('')}
+              </select>
+            </td>
+            <td>
+              <select data-field="category">
+                <option value="">선택</option>
+                ${CATEGORY_OPTIONS.map(c => `<option value="${escapeAttr(c)}" ${r.category===c?'selected':''}>${escapeHtml(c)}</option>`).join('')}
+              </select>
+            </td>
+            <td>
+              <select data-field="type">
+                <option value="">선택</option>
+                ${TYPE_OPTIONS.map(t => `<option value="${escapeAttr(t)}" ${r.type===t?'selected':''}>${escapeHtml(t)}</option>`).join('')}
+              </select>
+            </td>
+            <td><input type="date" data-field="start" value="${r.start}"></td>
+            <td><input type="date" data-field="end" value="${r.type==='OPEN' ? '' : r.end}" ${r.type==='OPEN' ? 'disabled' : ''}></td>
+            <td><input type="date" data-field="allocDate" value="${r.allocDate || ''}"></td>
+            <td>
+              <div class="ship-dates">
+                ${shipDates.map((sd, si) => `
+                  <div class="ship-date-row" data-ship-idx="${si}">
+                    <input type="date" data-ship-date value="${sd}">
+                    ${shipDates.length > 1 ? `<button type="button" class="ship-date-del" title="삭제">&times;</button>` : ''}
+                  </div>
+                `).join('')}
+                <button type="button" class="ship-date-add">+ 출고일 추가</button>
+              </div>
+            </td>
+            <td><textarea data-field="memo" placeholder="비고" rows="1">${escapeHtml(r.memo)}</textarea></td>
+            <td class="del-col"><button class="row-del" title="삭제">&times;</button></td>
+          </tr>
+        `;}).join('')}
+      </tbody>
+    </table>
+    <button class="add-row-btn" id="addRowBtn">+ 행 추가</button>
+  `;
+
+  view.querySelectorAll('#eventRows tr').forEach(tr => {
+    const id = parseInt(tr.dataset.id, 10);
+    const row = rows.find(r => r.id === id);
+    tr.querySelectorAll('input[data-field], textarea[data-field]').forEach(inp => {
+      inp.addEventListener('change', () => {
+        row[inp.dataset.field] = inp.value;
+        renderCalendar();
+      });
+    });
+    tr.querySelectorAll('textarea[data-field]').forEach(ta => {
+      const autoResize = () => { ta.style.height = 'auto'; ta.style.height = (ta.scrollHeight + 2) + 'px'; };
+      autoResize();
+      ta.addEventListener('input', autoResize);
+    });
+    tr.querySelectorAll('select').forEach(sel => {
+      sel.addEventListener('change', () => {
+        row[sel.dataset.field] = sel.value;
+        if(sel.dataset.field === 'brand'){
+          row.store = '';
+          renderEventTable();
+        }
+        if(sel.dataset.field === 'type'){
+          if(sel.value === 'OPEN') row.end = '';
+          renderEventTable();
+        }
+        renderCalendar();
+      });
+    });
+    tr.querySelector('.row-del').addEventListener('click', () => {
+      eventData[currentYear][currentMonth] = rows.filter(r => r.id !== id);
+      renderEventTable();
+      renderCalendar();
+    });
+
+    if(!row.shipDates || !row.shipDates.length) row.shipDates = [''];
+    tr.querySelectorAll('[data-ship-date]').forEach((inp, idx) => {
+      inp.addEventListener('change', () => {
+        row.shipDates[idx] = inp.value;
+        saveState();
+      });
+    });
+    tr.querySelectorAll('.ship-date-del').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.closest('.ship-date-row').dataset.shipIdx, 10);
+        row.shipDates.splice(idx, 1);
+        if(row.shipDates.length === 0) row.shipDates = [''];
+        renderEventTable();
+      });
+    });
+    const addBtn = tr.querySelector('.ship-date-add');
+    if(addBtn){
+      addBtn.addEventListener('click', () => {
+        row.shipDates.push('');
+        renderEventTable();
+      });
+    }
+  });
+
+  document.getElementById('addRowBtn').addEventListener('click', () => {
+    rows.push({id: eidCounter++, brand:'', store:'', category:'', type:'', start:'', end:'', allocDate:'', shipDates:[''], memo:''});
+    renderEventTable();
+  });
+}
+
+function pad2(n){ return n < 10 ? '0'+n : ''+n; }
+function toISO(y,m,d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
+
+function renderBrandLegend(){
+  const legend = document.getElementById('brandLegend');
+  const brandNames = Object.keys(storeData).sort(collator.compare);
+  legend.innerHTML = brandNames.map(b => `
+    <div class="item"><span class="dot" style="background:${brandColor(b)}"></span>${escapeHtml(b)}</div>
+  `).join('');
+
+  const typeLegend = document.getElementById('typeLegend');
+  typeLegend.innerHTML = Object.keys(TYPE_COLORS).map(t => `
+    <div class="item"><span class="dot" style="background:${TYPE_COLORS[t]}"></span>${escapeHtml(t)}</div>
+  `).join('');
+}
+
+function renderCalendar(){
+  const calSub = document.getElementById('calSub');
+  calSub.textContent = `${currentYear}년 ${currentMonth}월`;
+  renderBrandLegend();
+
+  const calBody = document.getElementById('calBody');
+  calBody.innerHTML = "";
+
+  const first = new Date(currentYear, currentMonth-1, 1);
+  const startOffset = first.getDay(); // 0=Sun
+  const gridStart = new Date(currentYear, currentMonth-1, 1 - startOffset);
+
+  const events = eventData[currentYear][currentMonth];
+
+  for(let w=0; w<6; w++){
+    const weekDiv = document.createElement('div');
+    weekDiv.className = 'cal-week';
+    for(let d=0; d<7; d++){
+      const date = new Date(gridStart);
+      date.setDate(gridStart.getDate() + w*7 + d);
+      const iso = toISO(date.getFullYear(), date.getMonth()+1, date.getDate());
+      const outside = (date.getMonth() !== currentMonth-1);
+      const cell = document.createElement('div');
+      cell.className = 'cal-day' + (outside ? ' outside' : '') + (d===0 ? ' sun' : '') + (d===6 ? ' sat' : '');
+
+      let chipsHtml = '';
+      if(!outside){
+        const matching = events
+          .filter(ev => ev.start && ev.brand && (ev.type === 'OPEN' ? ev.start === iso : (ev.end && ev.start <= iso && iso <= ev.end)))
+          .sort((a,b) => collator.compare(a.brand, b.brand));
+        chipsHtml = matching.map(ev => {
+          const parts = [ev.brand];
+          if(ev.store) parts.push(ev.store);
+          if(ev.category) parts.push(ev.category);
+          const label = parts.join(' · ');
+          const color = brandColor(ev.brand);
+          const textColor = darkenColor(color, 0.28);
+          const typeBadge = ev.type ? `<span class="chip-type" style="background:${typeColor(ev.type)}">${escapeHtml(ev.type)}</span>` : '';
+          return `<div class="chip" style="border-left-color:${color}; background:${color}22; color:${textColor}" title="${escapeAttr((ev.type ? '['+ev.type+'] ' : '') + label)}">${typeBadge}${escapeHtml(label)}</div>`;
+        }).join('');
+      }
+
+      cell.innerHTML = `<div class="daynum">${outside ? '' : date.getDate()}</div>${chipsHtml}`;
+      weekDiv.appendChild(cell);
+    }
+    calBody.appendChild(weekDiv);
+  }
+  saveState();
+}
+
+function renderAll(){
+  renderYearTabs();
+  renderMonthTabs();
+  renderEventTable();
+  renderCalendar();
+}
+
+/* ================= 통계 ================= */
+let statsYear = 'all';
+
+function computeMonthlyBrandStats(){
+  const years = statsYear === 'all' ? eventYears : [statsYear];
+  const monthly = {};
+  for(let m = 1; m <= 12; m++) monthly[m] = {};
+  const brandsSet = new Set();
+
+  years.forEach(y => {
+    if(!eventData[y]) return;
+    for(let m = 1; m <= 12; m++){
+      (eventData[y][m] || []).forEach(ev => {
+        if(!ev.brand || !ev.start) return;
+        const endDate = ev.type === 'OPEN' ? ev.start : ev.end;
+        if(!endDate || endDate < ev.start) return;
+
+        brandsSet.add(ev.brand);
+        monthly[m][ev.brand] = (monthly[m][ev.brand] || 0) + 1;
+      });
+    }
+  });
+
+  const brands = Array.from(brandsSet).sort((a,b) => collator.compare(a, b));
+  return { monthly, brands };
+}
+
+function renderStatsYearTabs(){
+  const wrap = document.getElementById('statsYearTabs');
+  const years = ['all', ...eventYears];
+  wrap.innerHTML = years.map(y => `
+    <div class="stat-year-tab${statsYear===y ? ' active' : ''}" data-year="${y}">${y==='all' ? '전체' : (y % 100) + '년'}</div>
+  `).join('');
+  wrap.querySelectorAll('.stat-year-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const y = tab.dataset.year;
+      statsYear = y === 'all' ? 'all' : parseInt(y, 10);
+      renderStats();
+    });
+  });
+}
+
+function renderMonthlyStatTable(elId){
+  const wrap = document.getElementById(elId);
+  const { monthly, brands } = computeMonthlyBrandStats();
+  if(brands.length === 0){
+    wrap.innerHTML = `<div class="chart-empty">등록된 행사 데이터가 없습니다.</div>`;
+    return;
+  }
+  const rows = brands.map(b => {
+    let total = 0;
+    for(let m = 1; m <= 12; m++) total += (monthly[m][b] || 0);
+    return { brand: b, total };
+  }).sort((a,b) => b.total - a.total || collator.compare(a.brand, b.brand));
+
+  wrap.innerHTML = `
+    <div class="stats-table-scroll">
+      <table class="stats">
+        <thead><tr>
+          <th class="rank-col">순위</th><th>브랜드</th>
+          ${Array.from({length:12}, (_,i) => `<th class="num-col2">${i+1}월</th>`).join('')}
+          <th class="num-col2">합계</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map((r,i) => `
+            <tr>
+              <td class="rank-col">${i+1}</td>
+              <td>${escapeHtml(r.brand)}</td>
+              ${Array.from({length:12}, (_,i) => `<td class="num-col2">${monthly[i+1][r.brand] || 0}</td>`).join('')}
+              <td class="num-col2"><b>${r.total}건</b></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderBrandMonthlyChart(elId){
+  const wrap = document.getElementById(elId);
+  const { monthly, brands } = computeMonthlyBrandStats();
+  if(brands.length === 0){
+    wrap.innerHTML = `<div class="chart-empty">등록된 행사 데이터가 없습니다.</div>`;
+    return;
+  }
+  const chartHeight = 240;
+
+  let maxVal = 0;
+  for(let m = 1; m <= 12; m++){
+    brands.forEach(b => {
+      const val = monthly[m][b] || 0;
+      if(val > maxVal) maxVal = val;
+    });
+  }
+
+  const niceMax = Math.max(4, Math.ceil(maxVal / 4) * 4);
+  const ticks = [4,3,2,1,0].map(i => Math.round(niceMax * i / 4));
+
+  const groups = [];
+  for(let m = 1; m <= 12; m++){
+    const bars = brands.map(b => {
+      const val = monthly[m][b] || 0;
+      const h = niceMax > 0 ? Math.max(val > 0 ? 2 : 0, Math.round(val / niceMax * chartHeight)) : 0;
+      const color = brandColor(b);
+      return `<div class="chart-mbar" style="height:${h}px; background:${color}" title="${escapeHtml(b)} ${val}건"></div>`;
+    }).join('');
+    groups.push(`
+      <div class="chart-month-group">
+        <div class="chart-month-bars" style="height:${chartHeight}px;">${bars}</div>
+        <div class="chart-vcol-label">${m}월</div>
+      </div>
+    `);
+  }
+
+  const legend = brands.map(b => `
+    <div class="chart-legend-item"><span class="chart-legend-dot" style="background:${brandColor(b)}"></span>${escapeHtml(b)}</div>
+  `).join('');
+
+  wrap.innerHTML = `
+    <div class="chart-with-axis">
+      <div class="chart-axis" style="height:${chartHeight}px;">
+        ${ticks.map(t => `<div class="chart-axis-tick">${t}건</div>`).join('')}
+      </div>
+      <div class="chart-vertical-wrap"><div class="chart-month-groups">${groups.join('')}</div></div>
+    </div>
+    <div class="chart-legend">${legend}</div>
+  `;
+}
+
+function renderStats(){
+  renderStatsYearTabs();
+  renderMonthlyStatTable('brandStatsTable');
+  renderBrandMonthlyChart('brandStatsChart');
+}
+
+/* ================= sheet tab switching ================= */
+document.querySelectorAll('.sheet-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.sheet-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const sheet = tab.dataset.sheet;
+    document.getElementById('panel-store').classList.toggle('active', sheet === 'store');
+    document.getElementById('panel-events').classList.toggle('active', sheet === 'events');
+    document.getElementById('panel-stats').classList.toggle('active', sheet === 'stats');
+    document.getElementById('pageTitle').textContent = sheet === 'store' ? '매장현황' : sheet === 'events' ? 'OPEN & 행사계획' : '통계';
+    if(sheet === 'stats') renderStats();
+  });
+});
+
+function escapeHtml(str){ return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function escapeAttr(str){ return escapeHtml(str); }
+
+/* ================= 자동 저장 (localStorage 캐시) ================= */
+const STORAGE_KEY = 'eventPlan_매장현황_행사계획_v1';
+const GH_CONFIG_KEY = 'eventPlan_sheetsConfig_v1';
+
+function setBadge(text, mode){
+  const badge = document.getElementById('saveBadge');
+  if(!badge) return;
+  badge.textContent = text;
+  badge.classList.remove('syncing','err');
+  if(mode) badge.classList.add(mode);
+  badge.classList.add('flash');
+  clearTimeout(badge._t);
+  badge._t = setTimeout(() => badge.classList.remove('flash'), 600);
+}
+
+function saveState(){
+  try{
+    const state = { storeData, eventYears, eventData, eidCounter, currentYear, currentMonth, statsYear };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if(getGhConfig()){
+      setBadge('Google Sheets 저장 대기중…', 'syncing');
+      scheduleSheetPush();
+    }else{
+      setBadge('저장됨(이 브라우저) · ' + new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'}));
+    }
+  }catch(e){ console.warn('저장 실패:', e); }
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return false;
+    const state = JSON.parse(raw);
+    if(state.storeData) storeData = state.storeData;
+    if(state.eventYears && state.eventYears.length) eventYears = state.eventYears;
+    if(state.eventData) eventData = state.eventData;
+    if(state.eidCounter) eidCounter = state.eidCounter;
+    if(state.statsYear !== undefined) statsYear = state.statsYear;
+    eventYears.forEach(ensureYear);
+    currentYear = eventYears.includes(state.currentYear) ? state.currentYear : eventYears[0];
+    currentMonth = state.currentMonth && state.currentMonth >= 1 && state.currentMonth <= 12 ? state.currentMonth : 1;
+    return true;
+  }catch(e){ console.warn('불러오기 실패:', e); return false; }
+}
+
+function applyRemoteState(state){
+  if(!state) return;
+  if(state.storeData) storeData = state.storeData;
+  if(state.eventYears && state.eventYears.length) eventYears = state.eventYears;
+  if(state.eventData) eventData = state.eventData;
+  if(state.eidCounter) eidCounter = state.eidCounter;
+  if(state.statsYear !== undefined) statsYear = state.statsYear;
+  eventYears.forEach(ensureYear);
+  if(!eventYears.includes(currentYear)) currentYear = eventYears[0];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  renderStore();
+  renderAll();
+}
+
+/* ================= Google Sheets(Apps Script) 동기화 ================= */
+function getGhConfig(){
+  try{
+    const raw = localStorage.getItem(GH_CONFIG_KEY);
+    if(!raw) return null;
+    const cfg = JSON.parse(raw);
+    if(!cfg.url) return null;
+    return cfg;
+  }catch(e){ return null; }
+}
+
+async function loadFromGithub(showBadge){
+  const cfg = getGhConfig();
+  if(!cfg) return false;
+  try{
+    if(showBadge) setBadge('Google Sheets에서 불러오는 중…', 'syncing');
+    const url = cfg.url + (cfg.url.includes('?') ? '&' : '?') + 't=' + Date.now();
+    const res = await fetch(url, { method: 'GET', cache:'no-store' });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const payload = await res.json();
+    if(payload && payload.error){ throw new Error(payload.error); }
+    if(!payload || !payload.data){
+      setBadge('Google Sheets에 저장된 데이터 없음(첫 저장 필요)', 'err');
+      return false;
+    }
+    applyRemoteState(payload.data);
+    setBadge('Google Sheets 데이터 불러옴 · ' + new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'}));
+    return true;
+  }catch(e){
+    console.warn('Google Sheets 불러오기 실패:', e);
+    if(showBadge) setBadge('Google Sheets 불러오기 실패(로컬 데이터 표시)', 'err');
+    return false;
+  }
+}
+
+let ghPushTimer = null;
+function scheduleSheetPush(){
+  clearTimeout(ghPushTimer);
+  ghPushTimer = setTimeout(() => { pushToSheet(); }, 2500);
+}
+
+let ghPushInFlight = false;
+let ghPushQueued = false;
+async function pushToSheet(){
+  const cfg = getGhConfig();
+  if(!cfg){ setBadge('저장됨(이 브라우저만, Google Sheets 미설정)', 'err'); return; }
+  if(ghPushInFlight){ ghPushQueued = true; return; }
+  ghPushInFlight = true;
+  setBadge('Google Sheets에 저장 중…', 'syncing');
+  try{
+    const state = { storeData, eventYears, eventData, eidCounter, currentYear, currentMonth, statsYear };
+    const body = { secret: cfg.token || '', data: state };
+
+    // Apps Script 웹 앱은 'text/plain'으로 보내야 브라우저의 CORS 사전 요청(preflight) 없이 전송됩니다.
+    const res = await fetch(cfg.url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body)
+    });
+
+    if(!res.ok) throw new Error('저장 실패 HTTP ' + res.status);
+    const result = await res.json().catch(() => ({}));
+    if(result && result.error) throw new Error(result.error);
+
+    setBadge('Google Sheets 저장됨 · ' + new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'}));
+  }catch(e){
+    console.warn('Google Sheets 저장 실패:', e);
+    setBadge('Google Sheets 저장 실패: ' + e.message, 'err');
+  }finally{
+    ghPushInFlight = false;
+    if(ghPushQueued){ ghPushQueued = false; scheduleSheetPush(); }
+  }
+}
+
+/* ================= 설정 모달 ================= */
+function openGhModal(){
+  const cfg = getGhConfig() || {};
+  document.getElementById('ghUrl').value = cfg.url || '';
+  document.getElementById('ghToken').value = cfg.token || '';
+  document.getElementById('ghModalOverlay').classList.add('open');
+}
+function closeGhModal(){
+  document.getElementById('ghModalOverlay').classList.remove('open');
+}
+document.getElementById('ghSettingsBtn').addEventListener('click', openGhModal);
+document.getElementById('ghModalCancel').addEventListener('click', closeGhModal);
+document.getElementById('ghModalOverlay').addEventListener('click', (e) => {
+  if(e.target.id === 'ghModalOverlay') closeGhModal();
+});
+document.getElementById('ghModalSave').addEventListener('click', async () => {
+  const url = document.getElementById('ghUrl').value.trim();
+  const token = document.getElementById('ghToken').value.trim();
+  if(!url){ alert('Apps Script 웹 앱 URL은 필수입니다.'); return; }
+  localStorage.setItem(GH_CONFIG_KEY, JSON.stringify({ url, token }));
+  closeGhModal();
+  const loaded = await loadFromGithub(true);
+  if(!loaded){
+    // 시트에 아직 데이터가 없다면 현재 데이터를 최초로 저장
+    pushToSheet();
+  }
+});
+
+loadState();
+renderStore();
+renderAll();
+loadFromGithub(true);
+</script>
+</body>
+</html>
